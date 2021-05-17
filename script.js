@@ -1,15 +1,42 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const img = new Image();
-img.src = './flappy-bird-set.png';
+
+const background = new Image();
+background.src = '/assets/background.png';
+
+const pipeImage = new Image();
+pipeImage.src = '/assets/pipe.png'
+
+const duck = new Image();
+duck.src = '/assets/duck.png'
+
+const duck2 = new Image();
+duck2.src = '/assets/duck2.png'
+
+const dduck = new Image();
+dduck.src = '/assets/dduck.png'
+
+const coin = new Audio()
+coin.src = '/assets/coin.mp3'
+
+const backSound = new Audio()
+backSound.src = '/assets/backSound.mp3'
+backSound.volume = 0.20
+
+backSound.onended = () => {
+  setTimeout(() => {
+    backSound.play()
+  }, 1500);
+};
 
 // general settings
 let gamePlaying = false;
 const gravity = .5;
-const speed = 6.2;
+const speed = 8.2;
 const size = [51, 36];
-const jump = -11.5;
-const cTenth = 0;
+const jump = -9.5;
+const cTenth = (canvas.width / 10);
+let flying = false
 
 let index = 0,
     bestScore = 0, 
@@ -20,8 +47,8 @@ let index = 0,
 
 // pipe settings
 const pipeWidth = 78;
-const pipeGap = 270;
-const pipeLoc = () => (Math.random() * ((canvas.height - (pipeGap + pipeWidth)) - pipeWidth)) + pipeWidth;
+let pipeGap = 270;
+const pipeLoc = () => (canvas.height / 2) - 150 + (Math.random() * 100);
 
 const setup = () => {
   currentScore = 0;
@@ -32,18 +59,24 @@ const setup = () => {
 
   // setup first 3 pipes
   pipes = Array(3).fill().map((a, i) => [canvas.width + (i * (pipeGap + pipeWidth)), pipeLoc()]);
+  backSound.play()
 }
 
 const render = () => {
+  backSound.play()
   // make the pipe and bird moving 
   index++;
+
+  if(pipeGap >= 150){
+    pipeGap -= (Math.random() / 3)
+  }
 
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // background first part 
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height, -((index * (speed / 2)) % canvas.width) + canvas.width, 0, canvas.width, canvas.height);
+  ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
   // background second part
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height, -(index * (speed / 2)) % canvas.width, 0, canvas.width, canvas.height);
+  // ctx.drawImage(background, 0, 0, canvas.width, canvas.height, -(index * (speed / 2)) % canvas.width, 0, canvas.width, canvas.height);
   
   // pipe display
   if (gamePlaying){
@@ -51,11 +84,8 @@ const render = () => {
       // pipe moving
       pipe[0] -= speed;
 
-      // top pipe
-      ctx.drawImage(img, 432, 588 - pipe[1], pipeWidth, pipe[1], pipe[0], 0, pipeWidth, pipe[1]);
-      // bottom pipe
-      ctx.drawImage(img, 432 + pipeWidth, 108, pipeWidth, canvas.height - pipe[1] + pipeGap, pipe[0], pipe[1] + pipeGap, pipeWidth, canvas.height - pipe[1] + pipeGap);
-
+      ctx.drawImage(pipeImage, pipe[0], 0, 30, pipe[1]);
+      ctx.drawImage(pipeImage, pipe[0], canvas.height - pipe[1], 30, pipe[1]);
       // take one point+create new pipe
       if(pipe[0] <= -pipeWidth){
         currentScore++;
@@ -64,36 +94,41 @@ const render = () => {
         
         // remove & create new pipe
         pipes = [...pipes.slice(1), [pipes[pipes.length-1][0] + pipeGap + pipeWidth, pipeLoc()]];
-        console.log(pipes);
       }
     
       // if hit the pipe, end
       if ([
         pipe[0] <= cTenth + size[0], 
         pipe[0] + pipeWidth >= cTenth, 
-        pipe[1] > flyHeight || pipe[1] + pipeGap < flyHeight + size[1]
+        pipe[1] > flyHeight  || pipe[1] + 270 < flyHeight + size[1]
       ].every(elem => elem)) {
         gamePlaying = false;
         setup();
       }
     })
   }
-  // draw bird
+  // draw duck
   if (gamePlaying) {
-    ctx.drawImage(img, 432, Math.floor((index % 9) / 3) * size[1], ...size, cTenth, flyHeight, ...size);
+    if(flying){
+      ctx.drawImage(duck2, 0, flyHeight, ...size);
+    }else{ 
+      ctx.drawImage(duck, 0, flyHeight, ...size);
+    }
     flight += gravity;
     flyHeight = Math.min(flyHeight + flight, canvas.height - size[1]);
   } else {
-    ctx.drawImage(img, 432, Math.floor((index % 9) / 3) * size[1], ...size, ((canvas.width / 2) - size[0] / 2), flyHeight, ...size);
+    ctx.drawImage(dduck, (canvas.width / 2 - size[1]), (canvas.height / 2) + (size[1] / 2), ...size);
     flyHeight = (canvas.height / 2) - (size[1] / 2);
       // text accueil
-    ctx.fillText(`Meilleur score : ${bestScore}`, 55, 245);
-    ctx.fillText('Cliquez pour jouer', 48, 535);
-    ctx.font = "bold 30px courier";
+    let topText = `Meilleur score : ${bestScore}`
+    let bottomText = 'Cliquez pour jouer'
+    ctx.fillText(topText, (canvas.width / 2) - (ctx.measureText(topText).width / 2), 245);
+    ctx.fillText(bottomText, (canvas.width / 2) - (ctx.measureText(bottomText).width / 2), 535);
+    ctx.font = "bold 30px BinaryWaters";
   }
 
-  //document.getElementById('bestScore').innerHTML = `Meilleur : ${bestScore}`;
-  //document.getElementById('currentScore').innerHTML = `Actuel : ${currentScore}`;
+  document.getElementById('bestScore').innerHTML = `Meilleur : ${bestScore}`;
+  document.getElementById('currentScore').innerHTML = `Actuel : ${currentScore}`;
 
   // tell the browser to perform anim
   window.requestAnimationFrame(render);
@@ -101,8 +136,28 @@ const render = () => {
 
 // launch setup
 setup();
-img.onload = render;
+background.onload = render;
 
 // start game
 document.addEventListener('click', () => gamePlaying = true);
-window.onclick = () => flight = jump;
+
+window.onclick = () => {
+  flight = jump
+  coin.play()
+  flying = true
+  setTimeout(() => {
+    flying = false
+  }, 200);
+};
+
+window.addEventListener('keydown', (e) => {
+  if(e.keyCode == 32){
+    gamePlaying = true;
+    flight = jump;
+    coin.play()
+    flying = true
+    setTimeout(() => {
+      flying = false
+    }, 200);
+  }
+})

@@ -1,10 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@font-face {
+  font-family: "BinaryWaters";
+  src: url("./assets/BinaryWaters.ttf")
+}
 
 body {
   margin: 0;
   text-align: center;
-  font-family: 'Press Start 2P', cursive;
+  font-family: 'BinaryWaters', "courier";
   user-select: none;
+  background-color: rgb(92, 92, 92);
+  background-image: url('./assets/bbackground.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 header {
   margin: 0 auto;
@@ -14,10 +28,17 @@ h1 {
   background: url(........) 0% 340px;
   padding: 1.2rem 0;
   margin: 0;
+  color: #000
 }
 .score-container {
   display: flex;
   justify-content: space-between;
   padding: 8px 6px;
-  background: #5EE270;
+  background: #e7ec4f;
 }
+
+#bestScore, #currentScore{
+  font-family: 'Segoe UI';
+  font-weight: bold;
+}
+
